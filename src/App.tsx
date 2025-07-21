@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import fetchArrivals from '../backend/fetchArrivals';
 
+interface Arrival {
+  lineName: string;
+  destinationName: string;
+  expectedArrival: string;
+  timeToStation: number;
+}
+
+
 function App() {
-  const [arrivals, setArrivals] = useState('');
+  const [arrivals, setArrivals] = useState<Arrival[]>([]);
   const [stopcode, setStopcode] = useState('');
 
   async function fetchArrivalsFromAPI(stopcode: string) {
-    const data: string = await fetchArrivals(stopcode);
+    const data: any = await fetchArrivals(stopcode);
     setArrivals(data)
   }
 
@@ -21,7 +29,25 @@ function App() {
           />
           <button className='border border-gray-300 rounded p-2 mb-4 w-full' onClick={() => fetchArrivalsFromAPI(stopcode)}>Fetch Arrivals</button>
           <div>
-            {arrivals ? arrivals : 'No arrivals data available.'}
+            {arrivals ? (arrivals.length > 5 ? arrivals.slice(4).map((bus: Arrival) => {
+              return (
+                <div key={bus.lineName} className="border border-gray-300 rounded p-2 mb-4">
+                  <h2 className="text-xl font-semibold">{bus.lineName}</h2>
+                  <p>Destination: {bus.destinationName}</p>
+                  <p>Expected Arrival: {new Date(bus.expectedArrival).toLocaleTimeString()}</p>
+                  <p>Time to Station: {bus.timeToStation} seconds</p>
+                </div>
+              );
+            }) : arrivals.map((bus: Arrival) => {
+              return (
+                <div key={bus.lineName} className="border border-gray-300 rounded p-2 mb-4">
+                  <h2 className="text-xl font-semibold">{bus.lineName}</h2>
+                  <p>Destination: {bus.destinationName}</p>
+                  <p>Expected Arrival: {new Date(bus.expectedArrival).toLocaleTimeString()}</p>
+                  <p>Time to Station: {bus.timeToStation} seconds</p>
+                </div>
+              );
+            })) : 'No arrivals data available.'}
           </div>
         </div>
   )

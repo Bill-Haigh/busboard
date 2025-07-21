@@ -6,7 +6,11 @@ export default async function fetchArrivals(stopcode:string) {
         }
 
         const data = await response.json();
-        return JSON.stringify(data);
+        console.log('Fetched arrivals:', data);
+        data.map((bus: any)=> {
+            return {destinationName: bus.destinationName, expectedArrival: bus.expectedArrival, lineName: bus.lineName, timeToStation: bus.timeToStation}
+        })
+        return data;
     } catch (error) {
         console.error('Error fetching arrivals:', error);
     }
