@@ -34,14 +34,14 @@ export async function fetchPostcode(postcode: string) {
     }
 }
 
-export async function fetchStopsByPostcode(postcode: string) {
+export async function fetchStopsByPostcode(postcode: string, radius: string) {
     try {
         const location = await fetchPostcode(postcode);
         if (!location) {
             throw new Error('Location not found');
         }
         
-        const response = await fetch(`https://api.tfl.gov.uk/StopPoint/?lat=${location.latitude}&lon=${location.longitude}&stopTypes=NaptanPublicBusCoachTram&app_key=5d5ebbce60f9408d9116c189191fe788`);
+        const response = await fetch(`https://api.tfl.gov.uk/StopPoint/?lat=${location.latitude}&lon=${location.longitude}&stopTypes=NaptanPublicBusCoachTram&radius=${radius}&app_key=5d5ebbce60f9408d9116c189191fe788`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }

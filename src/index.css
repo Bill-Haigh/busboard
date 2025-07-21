@@ -118,3 +118,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Make the shadcn/ui slider track visible and gray */
+[data-slot="track"] {
+  background-color: #42454b !important; /* Tailwind gray-400 */
+  height: 0.5rem !important;
+  border-radius: 0.25rem;
+}
+
+/* Style the unfilled slider background line */
+[data-slot="range"] {
+  background-color: #92969b !important; /* Tailwind gray-300 */
+  height: 0.5rem !important;
+  border-radius: 0.25rem;
+}
