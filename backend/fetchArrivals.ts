@@ -9,7 +9,7 @@ export async function fetchArrivals(stopcode:string) {
         console.log('Fetched arrivals:', data);
         const processedArrivals = await Promise.all(
             data.map((bus: any)=> {
-            return {destinationName: bus.destinationName, expectedArrival: bus.expectedArrival, lineName: bus.lineName, timeToStation: bus.timeToStation}
+            return {stationName: bus.stationName, destinationName: bus.destinationName, expectedArrival: bus.expectedArrival, lineName: bus.lineName, timeToStation: bus.timeToStation}
         }))
         console.log('Processed arrivals:', processedArrivals);
         return processedArrivals;
