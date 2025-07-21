@@ -1,9 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  fetchArrivals,
-  fetchPostcode,
-  fetchStopsByPostcode,
-} from "../backend/fetchArrivals";
+import { useState } from "react";
+import { fetchArrivals, fetchStopsByPostcode } from "../backend/fetchArrivals";
 
 interface Arrival {
   lineName: string;
@@ -13,19 +9,19 @@ interface Arrival {
 }
 
 function App() {
-  const [arrivals, setArrivals] = useState<Arrival[]>([]);
-  const [stopcodes, setStopcodes] = useState([]);
+  const [arrivals, setArrivals] = useState<Arrival[][]>([]);
   const [postcode, setPostcode] = useState("");
 
   async function fetchArrivalsFromAPI(postcode: string) {
-    const stops: any = await fetchStopsByPostcode(postcode);
-    setStopcodes(stops);
-    const data = await Promise.all(
-      stops.map(async (stopcode: string) => {
-        return await fetchArrivals(stopcode);
-      })
-    );
-    console.log("this is arrivals", data);
+    const stops: string[] = await fetchStopsByPostcode(postcode);
+    const data = (
+      await Promise.all(
+        stops.map(async (stopcode: string) => {
+          return await fetchArrivals(stopcode);
+        })
+      )
+    ).filter((arr): arr is Arrival[] => Array.isArray(arr));
+    console.log("Fetched data for all stops:", data);
     setArrivals(data);
   }
 
@@ -46,52 +42,35 @@ function App() {
       >
         Fetch Arrivals
       </button>
-      <div>
-        {arrivals.map((stop) => {
-          return (
-            <div>
-              {stop.length > 0
-                ? stop.length > 5
-                  ? stop.slice(4).map((bus: Arrival) => {
-                      return (
-                        <div
-                          key={bus.lineName}
-                          className="border border-gray-300 rounded p-2 mb-4"
-                        >
-                          <h2 className="text-xl font-semibold">
-                            {bus.lineName}
-                          </h2>
-                          <p>Destination: {bus.destinationName}</p>
-                          <p>
-                            Expected Arrival:{" "}
-                            {new Date(bus.expectedArrival).toLocaleTimeString()}
-                          </p>
-                          <p>Time to Station: {bus.timeToStation} seconds</p>
-                        </div>
-                      );
-                    })
-                  : stop.map((bus: Arrival) => {
-                      return (
-                        <div
-                          key={bus.lineName}
-                          className="border border-gray-300 rounded p-2 mb-4"
-                        >
-                          <h2 className="text-xl font-semibold">
-                            {bus.lineName}
-                          </h2>
-                          <p>Destination: {bus.destinationName}</p>
-                          <p>
-                            Expected Arrival:{" "}
-                            {new Date(bus.expectedArrival).toLocaleTimeString()}
-                          </p>
-                          <p>Time to Station: {bus.timeToStation} seconds</p>
-                        </div>
-                      );
-                    })
-                : "No arrivals data available."}
-            </div>
-          );
-        })}
+      <div className="flex flex-row flex-wrap gap-4 justify-center items-start mt-8">
+        {arrivals.map((stop, stopIdx) => (
+          <div
+            key={stopIdx}
+            className="flex flex-col gap-2 border border-cyan-400 rounded-lg p-4 min-w-[300px] bg-white shadow"
+          >
+            <h2 className="text-lg font-bold text-cyan-700 mb-2">
+              Stop {stopIdx + 1}
+            </h2>
+            {stop.length > 0 ? (
+              stop.slice(0, 5).map((bus: Arrival, busIdx: number) => (
+                <div
+                  key={bus.lineName + busIdx}
+                  className="border border-gray-300 rounded p-2 mb-2 bg-gray-50"
+                >
+                  <h3 className="text-md font-semibold">{bus.lineName}</h3>
+                  <p>Destination: {bus.destinationName}</p>
+                  <p>
+                    Expected Arrival:{" "}
+                    {new Date(bus.expectedArrival).toLocaleTimeString()}
+                  </p>
+                  <p>Time to Station: {bus.timeToStation} seconds</p>
+                </div>
+              ))
+            ) : (
+              <span className="text-gray-400">No arrivals data available.</span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
