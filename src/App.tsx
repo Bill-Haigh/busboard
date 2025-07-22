@@ -11,14 +11,10 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { Slider } from "@/components/ui/slider";
+import ArrivalCard from "./components/ArrivalCard";
+import type { Arrival } from "./components/ArrivalCard";
 
-interface Arrival {
-  stationName: string;
-  lineName: string;
-  destinationName: string;
-  expectedArrival: string;
-  timeToStation: number;
-}
+// Arrival interface now imported from ArrivalCard
 
 const postcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i;
 
@@ -27,29 +23,40 @@ function App() {
   const [postcode, setPostcode] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [radius, setRadius] = useState(500);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function fetchArrivalsFromAPI(postcode: string) {
     setShowAlert(false);
-    if (!postcodeRegex.test(postcode)) {
-      setShowAlert(true);
-      return;
+    setError(null);
+    setLoading(true);
+    try {
+      if (!postcodeRegex.test(postcode)) {
+        setShowAlert(true);
+        setLoading(false);
+        return;
+      }
+      const radiusStr = radius.toString();
+      const stops: string[] = await fetchStopsByPostcode(postcode, radiusStr);
+      const results = await Promise.all(
+        stops.map(async (stopcode: string) => {
+          return await fetchArrivals(stopcode);
+        })
+      );
+      const data = results.filter(
+        (arr): arr is Arrival[] =>
+          Array.isArray(arr) &&
+          arr.length > 0 &&
+          typeof arr[0] === "object" &&
+          arr[0] !== null &&
+          "stationName" in arr[0]
+      );
+      setArrivals(data);
+    } catch (err) {
+      setError("Failed to fetch arrivals. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-    const radiusStr = radius.toString();
-    const stops: string[] = await fetchStopsByPostcode(postcode, radiusStr);
-    const results = await Promise.all(
-      stops.map(async (stopcode: string) => {
-        return await fetchArrivals(stopcode);
-      })
-    );
-    const data = results.filter(
-      (arr): arr is Arrival[] =>
-        Array.isArray(arr) &&
-        arr.length > 0 &&
-        typeof arr[0] === "object" &&
-        arr[0] !== null &&
-        "stationName" in arr[0]
-    );
-    setArrivals(data);
   }
 
   function formatTime(seconds: number): string {
@@ -59,26 +66,51 @@ function App() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold underline text-center text-gray-700 m-4">
+    <main
+      className="bg-gray-100 min-h-screen"
+      aria-label="BusBoard main content"
+    >
+      <h1
+        className="text-3xl font-bold underline text-center text-gray-700 m-4"
+        id="busboard-title"
+      >
         BusBoard
       </h1>
-      <div className="flex flex-col items-center w-full mb-4">
-        <div className="flex w-full max-w-sm items-center gap-x-2 justify-center">
+      <section
+        className="flex flex-col items-center w-full mb-4"
+        aria-labelledby="busboard-title"
+      >
+        <form
+          className="flex w-full max-w-sm items-center gap-x-2 justify-center"
+          role="search"
+          aria-label="Search for bus stops by postcode"
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetchArrivalsFromAPI(postcode);
+          }}
+        >
           <Input
             type="text"
             placeholder="Enter Post Code"
             value={postcode}
             onChange={(e) => setPostcode(e.target.value.replace(" ", ""))}
             className="w-full h-[40px] max-w-sm bg-white border-gray-300 text-gray-700 rounded-lg px-2 py-2 shadow"
+            aria-label="Postcode input"
+            aria-describedby="postcode-desc"
+            autoComplete="postal-code"
           />
           <Button
             className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow"
             onClick={() => fetchArrivalsFromAPI(postcode)}
+            aria-label="Submit postcode"
+            type="submit"
           >
             Submit
           </Button>
-        </div>
+        </form>
+        <span id="postcode-desc" className="sr-only">
+          Enter a valid UK postcode to search for bus stops.
+        </span>
         <div className="flex w-full max-w-sm items-center gap-x-2 justify-center mt-4">
           <Slider
             defaultValue={[radius]}
@@ -86,10 +118,13 @@ function App() {
             step={10}
             className="w-full max-w-sm bg-white border border-gray-300 rounded-lg px-2 py-4 shadow"
             onValueChange={(value: number[]) => setRadius(value[0])}
+            aria-label="Search radius slider"
           />
           <p
             className="w-[100px] h-[40px] flex items-center justify-center px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 font-semibold shadow"
             style={{ minWidth: "100px", minHeight: "40px" }}
+            aria-live="polite"
+            aria-atomic="true"
           >
             {radius} m
           </p>
@@ -98,6 +133,8 @@ function App() {
           <Alert
             variant="destructive"
             className="mt-4 max-w-sm mx-auto bg-gray-200 border-gray-400 text-gray-800"
+            role="alert"
+            aria-live="assertive"
           >
             <AlertTitle>Invalid Postcode</AlertTitle>
             <AlertDescription>
@@ -105,55 +142,78 @@ function App() {
             </AlertDescription>
           </Alert>
         )}
-      </div>
-      <div className="flex flex-row flex-wrap gap-4 justify-center items-start mt-8">
-        <Carousel className="w-[360px]">
-          <CarouselContent>
-            {arrivals
-              .filter((stop) => stop.length > 0)
-              .map((stop, idx) => (
-                <CarouselItem key={`${stop[0].stationName}-${idx}`}>
-                  <div className="flex flex-col gap-2 border border-gray-400 rounded-lg p-4 min-w-[340px] bg-white shadow">
-                    <h2 className="text-lg font-bold text-gray-700 mb-2">
-                      {stop[0].stationName}
-                    </h2>
-                    {stop
-                      .slice()
-                      .sort((a, b) => a.timeToStation - b.timeToStation)
-                      .slice(0, 5)
-                      .map((bus: Arrival, busIdx: number) => (
-                        <div
-                          key={bus.lineName + busIdx}
-                          className="border border-gray-300 rounded-lg p-4 bg-gray-100 shadow mb-2"
-                        >
-                          <h3 className="text-md font-semibold mb-1 text-gray-800">
-                            {bus.lineName}
-                          </h3>
-                          <p className="mb-1 text-gray-700">
-                            Destination: {bus.destinationName}
-                          </p>
-                          <p className="mb-1 text-gray-700">
-                            Expected Arrival:{" "}
-                            {new Date(bus.expectedArrival).toLocaleTimeString()}
-                          </p>
-                          <p className="mb-1 text-gray-700">
-                            Time to Station: {formatTime(bus.timeToStation)}
-                          </p>
-                        </div>
-                      ))}
-                  </div>
-                </CarouselItem>
-              ))}
-          </CarouselContent>
-          {arrivals.length > 1 && (
-            <>
-              <CarouselPrevious />
-              <CarouselNext />
-            </>
-          )}
-        </Carousel>
-      </div>
-    </div>
+      </section>
+      {loading && (
+        <div className="flex justify-center items-center mt-8">
+          <svg
+            className="animate-spin h-8 w-8 text-gray-700 mr-2"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            />
+          </svg>
+          <span className="text-gray-600 font-semibold">Loading...</span>
+        </div>
+      )}
+      {error && (
+        <Alert
+          variant="destructive"
+          className="mt-4 max-w-sm mx-auto bg-gray-200 border-gray-400 text-gray-800"
+        >
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {!loading && !error && (
+        <div className="flex flex-row flex-wrap gap-4 justify-center items-start mt-8">
+          <Carousel className="w-[360px]">
+            <CarouselContent>
+              {arrivals
+                .filter((stop) => stop.length > 0)
+                .map((stop, idx) => (
+                  <CarouselItem key={`${stop[0].stationName}-${idx}`}>
+                    <div className="flex flex-col gap-2 border border-gray-400 rounded-lg p-4 min-w-[340px] bg-white shadow">
+                      <h2 className="text-lg font-bold text-gray-700 mb-2">
+                        {stop[0].stationName}
+                      </h2>
+                      {stop
+                        .slice()
+                        .sort((a, b) => a.timeToStation - b.timeToStation)
+                        .slice(0, 5)
+                        .map((bus: Arrival, busIdx: number) => (
+                          <ArrivalCard
+                            key={bus.lineName + busIdx}
+                            arrival={bus}
+                            formatTime={formatTime}
+                          />
+                        ))}
+                    </div>
+                  </CarouselItem>
+                ))}
+            </CarouselContent>
+            {arrivals.length > 1 && (
+              <>
+                <CarouselPrevious />
+                <CarouselNext />
+              </>
+            )}
+          </Carousel>
+        </div>
+      )}
+    </main>
   );
 }
 
