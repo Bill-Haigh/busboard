@@ -132,3 +132,8 @@
   height: 0.5rem !important;
   border-radius: 0.25rem;
 }
+
+[data-slot="thumb"] {
+  background-color: #374151 !important; /* Tailwind gray-700 */
+  border: 2px solid #374151 !important;
+}

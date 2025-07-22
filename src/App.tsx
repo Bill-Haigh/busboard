@@ -64,29 +64,36 @@ function App() {
         BusBoard
       </h1>
       <div className="flex flex-col items-center w-full mb-4">
-        <div className="flex w-full max-w-sm items-center gap-2 justify-center">
+        <div className="flex w-full max-w-sm items-center gap-x-2 justify-center">
           <Input
             type="text"
             placeholder="Enter Post Code"
             value={postcode}
             onChange={(e) => setPostcode(e.target.value.replace(" ", ""))}
-            className="bg-white border-gray-300 text-gray-700"
+            className="w-full h-[40px] max-w-sm bg-white border-gray-300 text-gray-700 rounded-lg px-2 py-2 shadow"
           />
           <Button
-            className="bg-gray-700 text-white hover:bg-gray-800"
+            className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow"
             onClick={() => fetchArrivalsFromAPI(postcode)}
           >
             Submit
           </Button>
         </div>
-        <Slider
-          defaultValue={[500]}
-          max={1000}
-          step={10}
-          className="w-full max-w-sm mt-4"
-          onValueChange={(value: number[]) => setRadius(value[0])}
-        />
-        <p>{radius} meters.</p>
+        <div className="flex w-full max-w-sm items-center gap-x-2 justify-center mt-4">
+          <Slider
+            defaultValue={[radius]}
+            max={1000}
+            step={10}
+            className="w-full max-w-sm bg-white border border-gray-300 rounded-lg px-2 py-4 shadow"
+            onValueChange={(value: number[]) => setRadius(value[0])}
+          />
+          <p
+            className="w-[100px] h-[40px] flex items-center justify-center px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 font-semibold shadow"
+            style={{ minWidth: "100px", minHeight: "40px" }}
+          >
+            {radius} m
+          </p>
+        </div>
         {showAlert && (
           <Alert
             variant="destructive"
