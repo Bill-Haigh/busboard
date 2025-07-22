@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { fetchArrivals, fetchStopsByPostcode } from "../backend/fetchArrivals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,26 +110,30 @@ function App() {
                     <h2 className="text-lg font-bold text-gray-700 mb-2">
                       {stop[0].stationName}
                     </h2>
-                    {stop.slice(0, 5).map((bus: Arrival, busIdx: number) => (
-                      <div
-                        key={bus.lineName + busIdx}
-                        className="border border-gray-300 rounded-lg p-4 bg-gray-100 shadow mb-2"
-                      >
-                        <h3 className="text-md font-semibold mb-1 text-gray-800">
-                          {bus.lineName}
-                        </h3>
-                        <p className="mb-1 text-gray-700">
-                          Destination: {bus.destinationName}
-                        </p>
-                        <p className="mb-1 text-gray-700">
-                          Expected Arrival:{" "}
-                          {new Date(bus.expectedArrival).toLocaleTimeString()}
-                        </p>
-                        <p className="mb-1 text-gray-700">
-                          Time to Station: {formatTime(bus.timeToStation)}
-                        </p>
-                      </div>
-                    ))}
+                    {stop
+                      .slice()
+                      .sort((a, b) => a.timeToStation - b.timeToStation)
+                      .slice(0, 5)
+                      .map((bus: Arrival, busIdx: number) => (
+                        <div
+                          key={bus.lineName + busIdx}
+                          className="border border-gray-300 rounded-lg p-4 bg-gray-100 shadow mb-2"
+                        >
+                          <h3 className="text-md font-semibold mb-1 text-gray-800">
+                            {bus.lineName}
+                          </h3>
+                          <p className="mb-1 text-gray-700">
+                            Destination: {bus.destinationName}
+                          </p>
+                          <p className="mb-1 text-gray-700">
+                            Expected Arrival:{" "}
+                            {new Date(bus.expectedArrival).toLocaleTimeString()}
+                          </p>
+                          <p className="mb-1 text-gray-700">
+                            Time to Station: {formatTime(bus.timeToStation)}
+                          </p>
+                        </div>
+                      ))}
                   </div>
                 </CarouselItem>
               ))}
