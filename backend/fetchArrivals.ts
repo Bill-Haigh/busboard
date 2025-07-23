@@ -12,7 +12,6 @@ export async function fetchArrivals(stopcode:string) {
             data.map((bus: any)=> {
                 return {stationName: bus.stationName, destinationName: bus.destinationName, expectedArrival: bus.expectedArrival, lineName: bus.lineName, timeToStation: bus.timeToStation, vehicleId: bus.vehicleId};
             }))
-        console.log('Fetched arrivals:', processedArrivals);
         return processedArrivals;
     } catch (error) {
         console.error('Error fetching arrivals:', error);
@@ -74,7 +73,6 @@ export async function fetchRouteDetails(vehicleId: string) {
                 vehicleId: detail.vehicleId
             };
         });
-        console.log('Fetched route details:', processedDetails);
         return processedDetails;
     } catch (error) {
         console.error('Error fetching route details:', error);

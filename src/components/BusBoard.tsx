@@ -208,6 +208,7 @@ function BusBoard() {
                             arrival={bus}
                             formatTime={formatTime}
                             onClick={handleRouteDetails}
+                            isLink={true}
                           />
                         ))}
                     </div>

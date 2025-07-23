@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { fetchRouteDetails } from "../../backend/fetchArrivals";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ArrivalCard from "./ArrivalCard";
-import { formatTime } from "../../backend/utils"; // Assuming formatTime is exported from utils
+import { formatTime } from "../../backend/utils";
 
 const RouteDetail = () => {
   const { vehicleId } = useParams();
@@ -85,6 +85,7 @@ const RouteDetail = () => {
                 key={arrival.destinationName + arrival.timeToStation} //TODO sort out keys
                 arrival={arrival}
                 formatTime={formatTime}
+                isLink={false}
               />
             ))}
           </div>
