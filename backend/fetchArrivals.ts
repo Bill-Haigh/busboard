@@ -10,8 +10,9 @@ export async function fetchArrivals(stopcode:string) {
         const data = await response.json();
         const processedArrivals = await Promise.all(
             data.map((bus: any)=> {
-            return {stationName: bus.stationName, destinationName: bus.destinationName, expectedArrival: bus.expectedArrival, lineName: bus.lineName, timeToStation: bus.timeToStation}
-        }))
+                return {stationName: bus.stationName, destinationName: bus.destinationName, expectedArrival: bus.expectedArrival, lineName: bus.lineName, timeToStation: bus.timeToStation, vehicleId: bus.vehicleId};
+            }))
+        console.log('Fetched arrivals:', processedArrivals);
         return processedArrivals;
     } catch (error) {
         console.error('Error fetching arrivals:', error);
@@ -52,5 +53,30 @@ export async function fetchStopsByPostcode(postcode: string, radius: string) {
         return stops;
     } catch (error) {
         console.error('Error fetching stops by postcode:', error);
+    }
+}
+
+export async function fetchRouteDetails(vehicleId: string) {
+    try {
+        const response = await fetch(`https://api.tfl.gov.uk/Vehicle/${vehicleId}/Arrivals?app_key=${API_KEY}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const processedDetails = data.map((detail: any) => {
+            return {
+                stationName: detail.destinationName,
+                destinationName: detail.stationName,
+                expectedArrival: detail.expectedArrival,
+                lineName: detail.lineName,
+                timeToStation: detail.timeToStation,
+                vehicleId: detail.vehicleId
+            };
+        });
+        console.log('Fetched route details:', processedDetails);
+        return processedDetails;
+    } catch (error) {
+        console.error('Error fetching route details:', error);
     }
 }
