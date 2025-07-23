@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   fetchArrivals,
   fetchStopsByPostcode,
-  fetchRouteDetails,
 } from "../../backend/fetchArrivals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,16 +62,6 @@ function BusBoard() {
       setLoading(false);
     }
   }
-
-  const handleRouteDetails = async (vehicleId: string) => {
-    try {
-      const details = await fetchRouteDetails(vehicleId);
-      // You can display details in a modal, alert, or set state here
-      console.log("Route details:", details);
-    } catch (error) {
-      setError("Failed to fetch route details.");
-    }
-  };
 
   return (
     <main
@@ -209,7 +198,6 @@ function BusBoard() {
                             key={bus.lineName + busIdx}
                             arrival={bus}
                             formatTime={formatTime}
-                            onClick={handleRouteDetails}
                             isLink={true}
                           />
                         ))}
