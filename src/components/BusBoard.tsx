@@ -109,12 +109,14 @@ function BusBoard() {
             autoComplete="postal-code"
           />
           <Button
-            className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow"
+            className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow cursor-pointer"
             onClick={() => fetchArrivalsFromAPI(postcode)}
-            aria-label="Submit postcode"
+            aria-label={
+              arrivals.length > 0 ? "Refresh bus arrivals" : "Submit postcode"
+            }
             type="submit"
           >
-            Submit
+            {arrivals.length > 0 ? "Refresh" : "Submit"}
           </Button>
         </form>
         <span id="postcode-desc" className="sr-only">

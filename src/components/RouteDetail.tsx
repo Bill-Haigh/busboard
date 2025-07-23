@@ -4,6 +4,7 @@ import { fetchRouteDetails } from "../../backend/fetchArrivals";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ArrivalCard from "./ArrivalCard";
 import { formatTime } from "../../backend/utils";
+import { Button } from "./ui/button";
 
 const RouteDetail = () => {
   const { vehicleId } = useParams();
@@ -11,19 +12,19 @@ const RouteDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function getDetails() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchRouteDetails(vehicleId as string);
-        setDetails(data);
-      } catch (err) {
-        setError("Failed to fetch route details.");
-      } finally {
-        setLoading(false);
-      }
+  async function getDetails() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchRouteDetails(vehicleId as string);
+      setDetails(data);
+    } catch (err) {
+      setError("Failed to fetch route details.");
+    } finally {
+      setLoading(false);
     }
+  }
+  useEffect(() => {
     getDetails();
   }, [vehicleId]);
 
@@ -32,11 +33,18 @@ const RouteDetail = () => {
       <h1 className="text-3xl font-bold underline text-center text-gray-700 m-4">
         Route Details.
       </h1>
-      <div className="flex justify-center mb-4">
+      <div className="flex max-w-sm items-center gap-x-2 justify-center mb-4 mx-auto">
+        <Button
+          className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow cursor-pointer"
+          onClick={() => getDetails()}
+          aria-label="Refresh route details"
+        >
+          Refresh
+        </Button>
         <Link to="/" className="inline-block">
           <button
             type="button"
-            className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow"
+            className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow cursor-pointer"
             aria-label="Return to Home"
           >
             Return
