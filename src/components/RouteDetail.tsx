@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchRouteDetails } from "../../backend/fetchArrivals";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -28,10 +28,21 @@ const RouteDetail = () => {
   }, [vehicleId]);
 
   return (
-    <main className="bg-grey-100 min-h-screen">
-      <h1 className="text-3xl font-bold underline text-center text-grey-700 m-4">
+    <main className="bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold underline text-center text-gray-700 m-4">
         Route Details.
       </h1>
+      <div className="flex justify-center mb-4">
+        <Link to="/" className="inline-block">
+          <button
+            type="button"
+            className="w-[100px] h-[40px] bg-gray-700 text-white hover:bg-gray-500 rounded-lg font-semibold shadow"
+            aria-label="Return to Home"
+          >
+            Return
+          </button>
+        </Link>
+      </div>
       {loading && (
         <div className="flex justify-center items-center mt-8">
           <svg
@@ -67,14 +78,16 @@ const RouteDetail = () => {
         </Alert>
       )}
       {!loading && !error && details && (
-        <div className="flex flex-col items-center mt-8">
-          {details.map((arrival: any) => (
-            <ArrivalCard
-              key={arrival.destinationName + arrival.timeToStation} //TODO sort out keys
-              arrival={arrival}
-              formatTime={formatTime}
-            />
-          ))}
+        <div className="flex flex-row flex-wrap gap-4 justify-center items-start mt-8">
+          <div className="flex flex-col gap-2 border border-gray-400 rounded-lg p-4 w-[360px] bg-white shadow">
+            {details.map((arrival: any) => (
+              <ArrivalCard
+                key={arrival.destinationName + arrival.timeToStation} //TODO sort out keys
+                arrival={arrival}
+                formatTime={formatTime}
+              />
+            ))}
+          </div>
         </div>
       )}
     </main>
